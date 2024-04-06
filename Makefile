@@ -22,8 +22,19 @@ restart:
 		exit 1; \
     fi
 
-	screen -S bpy-tools -X quit; \
+	make stop
 	screen -S bpy-tools java -jar build.jar;
+
+restart-b:
+	make build;
+	make restart;
+
+run-b:
+	make build;
+	make run;
+
+go:
+	screen -x bpy-tools
 
 stop:
 	screen -S bpy-tools -X quit; \
