@@ -215,16 +215,13 @@ public class CrawlMaps implements Command {
         String destinationDirectory = App.dotenv.get("BEATMAP_FOLDER");
 
         try {
-            // Create the destination directory if it doesn't exist
             Path directory = Paths.get(destinationDirectory);
             if (!Files.exists(directory)) {
                 Files.createDirectories(directory);
             }
-
-            // Construct the destination file path
             Path destinationPath = Paths.get(destinationDirectory, name);
 
-            // Download the file
+            @SuppressWarnings("deprecation")
             URL url = new URL(location);
             URLConnection connection = url.openConnection();
             InputStream inputStream = connection.getInputStream();
@@ -236,7 +233,6 @@ public class CrawlMaps implements Command {
                 outputStream.write(buffer, 0, bytesRead);
             }
 
-            // Close streams
             inputStream.close();
             outputStream.close();
 
