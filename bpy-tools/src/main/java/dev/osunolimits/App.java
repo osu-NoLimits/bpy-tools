@@ -11,6 +11,7 @@ import commons.marcandreher.Commons.Flogger;
 import commons.marcandreher.Commons.WebServer;
 import commons.marcandreher.Input.CommandHandler;
 import dev.osunolimits.Actions.BestScorePoster;
+import dev.osunolimits.Actions.WelcomeNewPlayers;
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -53,9 +54,10 @@ public class App {
                 "                                                     ");
 
         CacheTimer cacheTimer = new CacheTimer(1, 1, flogger);
-        
-        if(Boolean.parseBoolean(dotenv.get("BESTSCOREPOSTER"))) cacheTimer.addAction(new BestScorePoster());
 
+        if(Boolean.parseBoolean(dotenv.get("BESTSCOREPOSTER"))) cacheTimer.addAction(new BestScorePoster());
+        if(Boolean.parseBoolean(dotenv.get("WELCOMENEWPLAYERS"))) cacheTimer.addAction(new WelcomeNewPlayers());
+        
         cmd.initialize();
     }
 
