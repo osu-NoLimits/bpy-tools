@@ -25,9 +25,8 @@ public class WelcomeNewPlayers extends DatabaseAction {
 
         try {
             ResultSet latestUserSet = mysql.Query(CHECK_LATEST_SQL);
-            // WELCOMENEWPLAYERS_HOOK
+
             while (latestUserSet.next()) {
-                System.out.println(readFromFile());
                 if (!readFromFile().contains(latestUserSet.getString("id"))) {
                     WebHook webHook = new WebHook(App.dotenv.get("WELCOMENEWPLAYERS_HOOK"));
 
