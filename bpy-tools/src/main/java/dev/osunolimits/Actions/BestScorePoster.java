@@ -18,72 +18,66 @@ import dev.osunolimits.App;
 
 public class BestScorePoster extends DatabaseAction {
 
-    @Override
-    public void executeAction(Flogger log) {
-        super.executeAction(log);
-        if (Boolean.parseBoolean(App.dotenv.get("BESTSCOREPOSTER")) == false)
-            return;
+        private final String QUERY_SQL = "SELECT `scores`.`id` AS `score_id`, `maps`.`id` AS `beatmap_id`, `scores`.`status` AS `score_status`, `maps`.`status` AS `map_status`, `scores`.`mode` AS `mode`, `title` AS `map_title`, `artist` AS `map_artist`, `userid` FROM `scores` LEFT JOIN `maps` ON `maps`.`md5` = `map_md5` WHERE `scores`.`status` = 2 AND `maps`.`status` = 2 ORDER BY `scores`.`pp` DESC LIMIT 1";
+        private final String CHECK_POSTED_SQL = "SELECT COUNT(`score_id`) AS `is_posted` FROM `bt_posted_scores` WHERE `score_id` = ?";
+        private final String EXEC_POST_SQL = "INSERT INTO `bt_posted_scores`(`score_id`, `pp`) VALUES (?,?)";
 
-        try {
-            ResultSet bestScoreSet = mysql.Query(
-                    "SELECT * FROM `scores` WHERE STATUS = 2 AND `mode` = 0 ORDER BY `scores`.`pp` DESC LIMIT 1");
-            while (bestScoreSet.next()) {
-                ResultSet isPostedSet = mysql.Query(
-                        "SELECT COUNT(`score_id`) AS `is_posted` FROM `bt_posted_scores` WHERE `score_id` = ?",
-                        bestScoreSet.getString("id"));
-                while (isPostedSet.next() && isPostedSet.getInt("is_posted") == 0) {
+        @Override
+        public void executeAction(Flogger log) {
+                super.executeAction(log);
+                if (Boolean.parseBoolean(App.dotenv.get("BESTSCOREPOSTER")) == false)
+                        return;
 
-                    JSONObject apiRequestScore = App.parseJsonResponse(new GetRequest(
-                            App.dotenv.get("APIURL") + "/get_score_info?id=" + bestScoreSet.getString("id"))
-                            .send("bpy-tools"));
-                    JSONObject apiScore = (JSONObject) apiRequestScore.get("score");
-                    Double pp = (Double) apiScore.get("pp");
-                    String map_md5 = (String) apiScore.get("map_md5");
+                try {
+                        ResultSet bestScoreSet = mysql.Query(QUERY_SQL);
+                        while (bestScoreSet.next()) {
+                                ResultSet isPostedSet = mysql.Query(CHECK_POSTED_SQL, bestScoreSet.getString("score_id"));
+                                while (isPostedSet.next() && isPostedSet.getInt("is_posted") == 0) {
+                                        JSONObject apiRequestScore = App.parseJsonResponse(new GetRequest(App.dotenv.get("APIURL") + "/get_score_info?id=" + bestScoreSet.getString("score_id")).send("bpy-tools"));
+                                        JSONObject apiScore = (JSONObject) apiRequestScore.get("score");
+                                        Double pp = (Double) apiScore.get("pp");
 
-                    String beatmapId = "";
-                    String beatmapTitle = "";
-                    String beatmapArtist = "";
+                                        String beatmapId = bestScoreSet.getString("beatmap_id");
+                                        String beatmapTitle = bestScoreSet.getString("map_title");
+                                        String beatmapArtist = bestScoreSet.getString("map_artist");
 
-                    ResultSet extraInfoSet = mysql.Query("SELECT `id`, `title`,`artist` FROM `maps` WHERE `md5` = ?",
-                            map_md5);
-                    while (extraInfoSet.next()) {
-                        beatmapId = extraInfoSet.getString("id");
-                        beatmapTitle = extraInfoSet.getString("title");
-                        beatmapArtist = extraInfoSet.getString("artist");
-                    }
+                                        log.log(App.dotenv.get("APIURL") + "/get_player_info?id=" + bestScoreSet.getString("userid") + "?scope=info", 0);
+                                        JSONObject apiRequestUser = App
+                                                        .parseJsonResponse(new GetRequest(App.dotenv.get("APIURL")
+                                                                        + "/get_player_info?id="
+                                                                        + bestScoreSet.getString("userid")
+                                                                        + "&scope=info").send("bpy-tools"));
+                                        JSONObject apiPlayer = (JSONObject) apiRequestUser.get("player");
+                                        JSONObject apiInfo = (JSONObject) apiPlayer.get("info");
+                                        WebHook webHook = new WebHook(App.dotenv.get("BESTSCOREPOSTER_HOOK"));
+                                        EmbedAuthor embedAuthor = new EmbedAuthor((String) apiInfo.get("name"),
+                                                        App.dotenv.get("AVATARSRV") + "/u/"
+                                                                        + bestScoreSet.getString("userid"),
+                                                        App.dotenv.get("DOMAIN") + "/u/"
+                                                                        + bestScoreSet.getString("userid"));
+                                        List<EmbedField> embedFields = new ArrayList<>();
+                                        EmbedTitle embedTitle = new EmbedTitle(
+                                                        "New Top Score " + pp + "pp on " + beatmapTitle,
+                                                        App.dotenv.get("DOMAIN") + "/beatmaps/" + beatmapId);
 
-                    log.log(App.dotenv.get("APIURL") + "/get_player_info?id=" + bestScoreSet.getString("userid")
-                            + "?scope=info", 0);
-                    JSONObject apiRequestUser = App
-                            .parseJsonResponse(new GetRequest(App.dotenv.get("APIURL") + "/get_player_info?id="
-                                    + bestScoreSet.getString("userid") + "&scope=info").send("bpy-tools"));
-                    JSONObject apiPlayer = (JSONObject) apiRequestUser.get("player");
-                    JSONObject apiInfo = (JSONObject) apiPlayer.get("info");
-                    WebHook webHook = new WebHook(App.dotenv.get("BESTSCOREPOSTER_HOOK"));
-                    EmbedAuthor embedAuthor = new EmbedAuthor((String) apiInfo.get("name"),
-                            App.dotenv.get("AVATARSRV") + "/u/" + bestScoreSet.getString("userid"),
-                            App.dotenv.get("DOMAIN") + "/u/" + bestScoreSet.getString("userid"));
-                    List<EmbedField> embedFields = new ArrayList<>();
-                    EmbedTitle embedTitle = new EmbedTitle("New Top Score " + pp + "pp on " + beatmapTitle,
-                            App.dotenv.get("DOMAIN") + "/beatmaps/" + beatmapId);
-                    
-                    String description= "Artist: " + beatmapArtist+ "\nBeatmap: " + beatmapTitle + "\nPP: " + pp + " | ACC: " + (Double) apiScore.get("acc")
-                    + "\nMax Combo: " + (Long) apiScore.get("max_combo") + " | Grade: " + (String) apiScore.get("grade");
-                    
-                    WebhookEmbed webhookEmbed = new WebhookEmbed(null, 2303786, description, null, null, null, embedTitle,
-                            embedAuthor, embedFields);
+                                        String description = "Artist: " + beatmapArtist + "\nBeatmap: " + beatmapTitle
+                                                        + "\nPP: " + pp + " | ACC: " + (Double) apiScore.get("acc")
+                                                        + "\nMax Combo: " + (Long) apiScore.get("max_combo")
+                                                        + " | Grade: " + (String) apiScore.get("grade");
 
-                    webHook.setWebHookEmbed(webhookEmbed);
-                    webHook.send();
+                                        WebhookEmbed webhookEmbed = new WebhookEmbed(null, 2303786, description, null,
+                                                        null, null, embedTitle,
+                                                        embedAuthor, embedFields);
 
-                    mysql.Exec("INSERT INTO `bt_posted_scores`(`score_id`, `pp`) VALUES (?,?)", bestScoreSet.getString("id"), pp.toString());
+                                        webHook.setWebHookEmbed(webhookEmbed);
+                                        webHook.send();
 
-
+                                        mysql.Exec(EXEC_POST_SQL, bestScoreSet.getString("score_id"), pp.toString());
+                                }
+                        }
+                } catch (Exception e) {
+                        log.error(e);
                 }
-            }
-        } catch (Exception e) {
-            log.error(e);
         }
-    }
 
 }

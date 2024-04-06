@@ -53,8 +53,8 @@ public class App {
                 "                                                     ");
 
         CacheTimer cacheTimer = new CacheTimer(1, 1, flogger);
-        cacheTimer.addAction(new BestScorePoster());
-
+        
+        if(Boolean.parseBoolean(dotenv.get("BESTSCOREPOSTER"))) cacheTimer.addAction(new BestScorePoster());
 
         cmd.initialize();
     }
