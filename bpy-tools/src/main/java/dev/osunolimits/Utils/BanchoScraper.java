@@ -3,6 +3,7 @@ package dev.osunolimits.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import commons.marcandreher.Commons.Flogger;
 import commons.marcandreher.Commons.GetRequest;
 import dev.osunolimits.App;
 
@@ -31,7 +32,7 @@ public class BanchoScraper {
                 banchoPlayers.add(new BanchoPlayer(curBanchoPlayer));
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            Flogger.instance.error(e);
         }
         return banchoPlayers;
     }
