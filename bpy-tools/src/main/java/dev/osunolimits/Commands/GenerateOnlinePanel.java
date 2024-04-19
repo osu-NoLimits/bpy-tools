@@ -55,6 +55,7 @@ public class GenerateOnlinePanel implements Command {
                     try {
                         JSONObject stdObj = (JSONObject) statsObj.get("0");
                         long rankTmp = (Long) stdObj.get("rank");
+                        if(rankTmp == 0) throw new Exception(); 
                         rank = " • #"+rankTmp;
                     } catch (Exception e) {
                         rank = " • -";
