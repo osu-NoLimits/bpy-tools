@@ -13,6 +13,7 @@ import commons.marcandreher.Input.CommandHandler;
 import dev.osunolimits.Actions.BestScorePoster;
 import dev.osunolimits.Actions.WelcomeNewPlayers;
 import dev.osunolimits.Commands.CrawlMaps;
+import dev.osunolimits.Commands.GetOnlinePlayers;
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -60,7 +61,7 @@ public class App {
         if(Boolean.parseBoolean(dotenv.get("WELCOMENEWPLAYERS"))) cacheTimer.addAction(new WelcomeNewPlayers());
 
         cmd.registerCommand(new CrawlMaps());
-
+        cmd.registerCommand(new GetOnlinePlayers());
         cmd.initialize();
     }
 

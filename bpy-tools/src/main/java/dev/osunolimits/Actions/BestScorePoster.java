@@ -18,7 +18,7 @@ import dev.osunolimits.App;
 
 public class BestScorePoster extends DatabaseAction {
 
-        private final String QUERY_SQL = "SELECT `scores`.`id` AS `score_id`, `maps`.`id` AS `beatmap_id`, `scores`.`status` AS `score_status`, `maps`.`status` AS `map_status`, `scores`.`mode` AS `mode`, `title` AS `map_title`, `artist` AS `map_artist`, `userid` FROM `scores` LEFT JOIN `maps` ON `maps`.`md5` = `map_md5` WHERE `scores`.`status` = 2 AND `maps`.`status` = 2 ORDER BY `scores`.`pp` DESC LIMIT 1";
+        private final String QUERY_SQL = "SELECT `scores`.`id` AS `score_id`, `scores`.`pp`, `maps`.`id` AS `beatmap_id`, `scores`.`status` AS `score_status`, `maps`.`status` AS `map_status`, `scores`.`mode` AS `mode`, `title` AS `map_title`, `artist` AS `map_artist`, `userid` FROM `scores` LEFT JOIN `maps` ON `maps`.`md5` = `map_md5` WHERE `scores`.`status` = 2 AND `maps`.`status` = 2 AND `scores`.`mode` = 0 ORDER BY `scores`.`pp` DESC LIMIT 1";
         private final String CHECK_POSTED_SQL = "SELECT COUNT(`score_id`) AS `is_posted` FROM `bt_posted_scores` WHERE `score_id` = ?";
         private final String EXEC_POST_SQL = "INSERT INTO `bt_posted_scores`(`score_id`, `pp`) VALUES (?,?)";
 
@@ -31,9 +31,13 @@ public class BestScorePoster extends DatabaseAction {
                 try {
                         ResultSet bestScoreSet = mysql.Query(QUERY_SQL);
                         while (bestScoreSet.next()) {
-                                ResultSet isPostedSet = mysql.Query(CHECK_POSTED_SQL, bestScoreSet.getString("score_id"));
+                                ResultSet isPostedSet = mysql.Query(CHECK_POSTED_SQL,
+                                                bestScoreSet.getString("score_id"));
                                 while (isPostedSet.next() && isPostedSet.getInt("is_posted") == 0) {
-                                        JSONObject apiRequestScore = App.parseJsonResponse(new GetRequest(App.dotenv.get("APIURL") + "/get_score_info?id=" + bestScoreSet.getString("score_id")).send("bpy-tools"));
+                                        JSONObject apiRequestScore = App.parseJsonResponse(
+                                                        new GetRequest(App.dotenv.get("APIURL") + "/get_score_info?id="
+                                                                        + bestScoreSet.getString("score_id"))
+                                                                        .send("bpy-tools"));
                                         JSONObject apiScore = (JSONObject) apiRequestScore.get("score");
                                         Double pp = (Double) apiScore.get("pp");
 
@@ -41,7 +45,8 @@ public class BestScorePoster extends DatabaseAction {
                                         String beatmapTitle = bestScoreSet.getString("map_title");
                                         String beatmapArtist = bestScoreSet.getString("map_artist");
 
-                                        log.log(App.dotenv.get("APIURL") + "/get_player_info?id=" + bestScoreSet.getString("userid") + "?scope=info", 0);
+                                        log.log(App.dotenv.get("APIURL") + "/get_player_info?id="
+                                                        + bestScoreSet.getString("userid") + "?scope=info", 0);
                                         JSONObject apiRequestUser = App
                                                         .parseJsonResponse(new GetRequest(App.dotenv.get("APIURL")
                                                                         + "/get_player_info?id="
