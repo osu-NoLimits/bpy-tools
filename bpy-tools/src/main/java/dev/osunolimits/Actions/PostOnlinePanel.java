@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -56,9 +57,10 @@ public class PostOnlinePanel implements Action {
             BufferedImage baseImage = ImageIO.read(baseImageFile);
             Graphics2D g2d = baseImage.createGraphics();
             BanchoScraper scraper = new BanchoScraper();
+            List<BanchoPlayer> bpyPlayers = scraper.getOnlinePlayers();
      
-            for(int i = 0; i < scraper.getOnlinePlayers().size(); i++) {
-                BanchoPlayer p = scraper.getOnlinePlayers().get(i);
+            for(int i = 0; i < bpyPlayers.size(); i++) {
+                BanchoPlayer p = bpyPlayers.get(i);
                 int textX = 100;
                 int textY = 0;
                 if(i > 9) { 
