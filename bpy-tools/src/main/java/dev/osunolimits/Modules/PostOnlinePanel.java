@@ -33,7 +33,6 @@ public class PostOnlinePanel extends ModuleInstance {
 
     @Override
     public void initialize() {
-        super.initialize();
         try {
             if (jdaInstance == null) {
                 jdaInstance = JDABuilder.createDefault(App.dotenv.get("ONLINEPANEL_TOKEN")).build().awaitReady();
@@ -41,6 +40,8 @@ public class PostOnlinePanel extends ModuleInstance {
         } catch (Exception e) {
             Flogger.instance.error(e);
         }
+        super.initialize();
+      
     }
 
     public PostOnlinePanel(int duration, TimeUnit timeUnit) {
@@ -53,10 +54,8 @@ public class PostOnlinePanel extends ModuleInstance {
             @Override
             public void executeAction(Flogger logger) {
                 super.executeAction(logger);
-
                 try {
-                    TextChannel channel = jdaInstance.getTextChannelById(App.dotenv.get("ONLINEPANEL_CHANNEL"));
-            
+                TextChannel channel = jdaInstance.getTextChannelById(App.dotenv.get("ONLINEPANEL_CHANNEL"));
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ImageIO.write(genPanel(), "png", baos);
                     byte[] imageData = baos.toByteArray();
@@ -69,7 +68,6 @@ public class PostOnlinePanel extends ModuleInstance {
                             channel.sendMessage("").addFiles(FileUpload.fromData(imageData, "online.png")).queue();
                         }
                     });
-            
                 } catch (IOException e) {
                    logger.error(e);
                 }
