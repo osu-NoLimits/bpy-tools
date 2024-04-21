@@ -1,24 +1,22 @@
 package dev.osunolimits;
 
-
 import java.util.concurrent.TimeUnit;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import commons.marcandreher.Cache.CacheTimer;
 import commons.marcandreher.Commons.Database;
 import commons.marcandreher.Commons.Database.ServerTimezone;
 import commons.marcandreher.Commons.Flogger;
 import commons.marcandreher.Commons.WebServer;
 import commons.marcandreher.Input.CommandHandler;
-import dev.osunolimits.Actions.BestScorePoster;
-import dev.osunolimits.Actions.PostOnlinePanel;
-import dev.osunolimits.Actions.WelcomeNewPlayers;
 import dev.osunolimits.Commands.CrawlMaps;
 import dev.osunolimits.Commands.GenerateOnlinePanel;
 import dev.osunolimits.Commands.GetOnlinePlayers;
-import dev.osunolimits.Utils.StatusBot;
+import dev.osunolimits.ModuleLoader.ModuleRegister;
+import dev.osunolimits.Modules.BestScorePoster;
+import dev.osunolimits.Modules.PostOnlinePanel;
+import dev.osunolimits.Modules.WelcomeNewPlayers;
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -60,15 +58,11 @@ public class App {
                 "\\____/\\_/   /_/        \\_/  \\____/\\____/\\____/\\____/\r\n" + //
                 "                                                     ");
 
-        CacheTimer cacheTimer = new CacheTimer(1, 1, TimeUnit.MINUTES);
+        ModuleRegister.addModuleToRegister(new BestScorePoster(5, TimeUnit.MINUTES));
+        ModuleRegister.addModuleToRegister(new WelcomeNewPlayers(2, TimeUnit.MINUTES));
+        ModuleRegister.addModuleToRegister(new PostOnlinePanel(2, TimeUnit.MINUTES));
 
-        if(Boolean.parseBoolean(dotenv.get("BESTSCOREPOSTER"))) cacheTimer.addAction(new BestScorePoster());
-        if(Boolean.parseBoolean(dotenv.get("WELCOMENEWPLAYERS"))) cacheTimer.addAction(new WelcomeNewPlayers());
-        if(Boolean.parseBoolean(dotenv.get("ONLINEPANEL"))) {
-            StatusBot.initialize();
-            CacheTimer statusBotTimer = new CacheTimer(1, 2, TimeUnit.MINUTES);
-            statusBotTimer.addAction(new PostOnlinePanel());
-        }
+        ModuleRegister.loadModules();
         cmd.registerCommand(new CrawlMaps());
         cmd.registerCommand(new GetOnlinePlayers());
         cmd.registerCommand(new GenerateOnlinePanel());
