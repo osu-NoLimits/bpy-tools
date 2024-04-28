@@ -1,18 +1,12 @@
 package dev.osunolimits.ModuleLoader;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import commons.marcandreher.Cache.CacheTimer;
 import commons.marcandreher.Cache.Action.DatabaseAction;
-import commons.marcandreher.Commons.Database;
-import commons.marcandreher.Commons.Flogger;
-import commons.marcandreher.Commons.MySQL;
 
 public class ModuleInstance implements Module {
 
-    protected MySQL mysql;
-    protected Flogger logger;
 
     protected CacheTimer cacheTimer;
 
@@ -26,13 +20,6 @@ public class ModuleInstance implements Module {
 
     @Override
     public void initialize() {
-        try {
-            logger = Flogger.instance;
-            mysql = Database.getConnection();
-        } catch (SQLException e) {
-            logger.error(e);
-        }
-
         start();
     }
 

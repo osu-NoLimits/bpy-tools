@@ -10,6 +10,7 @@ import commons.marcandreher.Commons.Database.ServerTimezone;
 import commons.marcandreher.Commons.Flogger;
 import commons.marcandreher.Commons.WebServer;
 import commons.marcandreher.Input.CommandHandler;
+import dev.osunolimits.Commands.CheckServices;
 import dev.osunolimits.Commands.CrawlMaps;
 import dev.osunolimits.Commands.GenerateOnlinePanel;
 import dev.osunolimits.Commands.GetOnlinePlayers;
@@ -17,6 +18,7 @@ import dev.osunolimits.ModuleLoader.ModuleRegister;
 import dev.osunolimits.Modules.BestScorePoster;
 import dev.osunolimits.Modules.PostOnlinePanel;
 import dev.osunolimits.Modules.WelcomeNewPlayers;
+import dev.osunolimits.Utils.TimeoutChecker;
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -25,6 +27,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class App {
 
     public static Dotenv dotenv;
+    public static boolean failedConnection = false;
 
     public static void main(String[] args) {
         dotenv = Dotenv.load();
@@ -66,7 +69,13 @@ public class App {
         cmd.registerCommand(new CrawlMaps());
         cmd.registerCommand(new GetOnlinePlayers());
         cmd.registerCommand(new GenerateOnlinePanel());
+        cmd.registerCommand(new CheckServices());
         cmd.initialize();
+
+        Thread timeoutChecker = new TimeoutChecker();
+        timeoutChecker.setName("TIMEOUT-CHECKER");
+        timeoutChecker.start();
+
     }
 
     public static JSONObject parseJsonResponse(String jsonResponse) throws Exception {

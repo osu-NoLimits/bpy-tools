@@ -33,6 +33,7 @@ public class WelcomeNewPlayers extends ModuleInstance {
             @Override
             public void executeAction(Flogger logger) {
                 super.executeAction(logger);
+                if(App.failedConnection)return;
 
                 try {
                     ResultSet latestUserSet = mysql.Query(CHECK_LATEST_SQL);
@@ -57,6 +58,7 @@ public class WelcomeNewPlayers extends ModuleInstance {
                     }
                 } catch (Exception e) {
                     logger.error(e);
+                    App.failedConnection = true;
                 }
             }
 

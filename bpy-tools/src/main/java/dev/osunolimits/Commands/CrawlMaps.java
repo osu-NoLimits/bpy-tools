@@ -10,12 +10,15 @@ import commons.marcandreher.Commons.Flogger;
 import commons.marcandreher.Commons.MySQL;
 import commons.marcandreher.Commons.Flogger.Prefix;
 import commons.marcandreher.Input.Command;
+import dev.osunolimits.App;
 import dev.osunolimits.Utils.OsuDirectClient;
 
 public class CrawlMaps implements Command {
 
     @Override
     public void executeAction(String[] args, Flogger logger) {
+        if(App.failedConnection)return;
+
         JSONParser parser = new JSONParser();
 
         if (args.length == 1) {
@@ -39,7 +42,9 @@ public class CrawlMaps implements Command {
         try {
             mysql = Database.getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            Flogger.instance.error(e);
+            App.failedConnection = true;
+            return;
         }
 
         try {

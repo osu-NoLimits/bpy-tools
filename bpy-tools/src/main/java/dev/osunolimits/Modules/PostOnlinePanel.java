@@ -54,6 +54,9 @@ public class PostOnlinePanel extends ModuleInstance {
             @Override
             public void executeAction(Flogger logger) {
                 super.executeAction(logger);
+                if(App.failedConnection)return;
+
+                
                 try {
                 TextChannel channel = jdaInstance.getTextChannelById(App.dotenv.get("ONLINEPANEL_CHANNEL"));
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -70,6 +73,7 @@ public class PostOnlinePanel extends ModuleInstance {
                     });
                 } catch (IOException e) {
                    logger.error(e);
+                   App.failedConnection = true;
                 }
             }
 

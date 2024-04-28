@@ -35,6 +35,7 @@ public class BestScorePoster extends ModuleInstance {
             @Override
             public void executeAction(Flogger logger) {
                 super.executeAction(logger);
+                if(App.failedConnection)return;
 
                 try {
                     ResultSet bestScoreSet = mysql.Query(QUERY_SQL);
@@ -88,6 +89,7 @@ public class BestScorePoster extends ModuleInstance {
                     }
                 } catch (Exception e) {
                     logger.error(e);
+                    App.failedConnection =true;
                 }
             }
 

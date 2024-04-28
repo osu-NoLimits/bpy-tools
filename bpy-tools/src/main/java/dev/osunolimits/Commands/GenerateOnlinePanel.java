@@ -6,12 +6,14 @@ import javax.imageio.ImageIO;
 
 import commons.marcandreher.Commons.Flogger;
 import commons.marcandreher.Input.Command;
+import dev.osunolimits.App;
 import dev.osunolimits.Modules.PostOnlinePanel;
 
 public class GenerateOnlinePanel implements Command {
 
     @Override
     public void executeAction(String[] args, Flogger logger) {
+        if(App.failedConnection)return;
         try {
             
             File outputFile = new File("output_image.png");
@@ -21,10 +23,8 @@ public class GenerateOnlinePanel implements Command {
     
         } catch (Exception e) {
             logger.error(e);
+            App.failedConnection = true;
         }
-
-
-     
     }
 
     @Override
