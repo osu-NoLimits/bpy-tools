@@ -60,7 +60,11 @@ public class PostOnlinePanel extends ModuleInstance {
                 try {
                 TextChannel channel = jdaInstance.getTextChannelById(App.dotenv.get("ONLINEPANEL_CHANNEL"));
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(genPanel(), "png", baos);
+
+                    BufferedImage img = genPanel();
+                    if(img == null)return;
+
+                    ImageIO.write(img, "png", baos);
                     byte[] imageData = baos.toByteArray();
         
                     channel.getIterableHistory().takeAsync(1).thenAccept(messages -> {
@@ -99,7 +103,7 @@ public class PostOnlinePanel extends ModuleInstance {
             Graphics2D g2d = baseImage.createGraphics();
             BanchoScraper scraper = new BanchoScraper();
             List<BanchoPlayer> bpyPlayers = scraper.getOnlinePlayers();
-     
+            if(bpyPlayers == null)return null;
             for(int i = 0; i < bpyPlayers.size(); i++) {
                 BanchoPlayer p = bpyPlayers.get(i);
                 int textX = 100;

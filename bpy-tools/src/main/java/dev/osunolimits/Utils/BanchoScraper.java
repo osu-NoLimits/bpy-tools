@@ -40,7 +40,6 @@ public class BanchoScraper {
             }
         } catch (IOException | InterruptedException e) {
             Flogger.instance.error(e);
-            App.failedConnection =true;
             return null;
         }
         return banchoPlayers;
